@@ -1,16 +1,29 @@
-name: build-deb-action
-  uses: jiro4989/build-deb-action@v2.1.0
-  with:
-    # Working directory relative to the root directory.
-    package: cutefish-wallpapers  
-    # Working directory relative to the root directory.
-    package_root: .debpkg
-    # Report level for reviewdog [info,warning,error]
-    maintainer: Maksym Titenko
-    # Reporter of reviewdog command [github-pr-check,github-pr-review].
-    version: 0.3-1
-    # Filtering mode for the reviewdog command [added,diff_context,file,nofilter].
-Default is added.
+name: build
 
-    arch: amd64
-    # description
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: create sample script
+        run: |
+          mkdir -p .debpkg/usr/bin
+          mkdir -p .debpkg/usr/lib/samplescript
+          echo -e "echo sample" > .debpkg/usr/bin/samplescript
+          chmod +x .debpkg/usr/bin/samplescript
+          echo -e "a=1" > .debpkg/usr/lib/samplescript/samplescript.conf
+      - uses: jiro4989/build-deb-action@v2
+        with:
+          package: samplescript
+          package_root: .debpkg
+          maintainer: your_name
+          version: ${{ github.ref }} # refs/tags/v*.*.*
+          arch: 'amd64'
+          depends: 'libc6 (>= 2.2.1), git'
+          desc: 'this is sample package.'
